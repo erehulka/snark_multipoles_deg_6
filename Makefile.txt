@@ -1,0 +1,19 @@
+CFLAGS = -std=c++17 -fconcepts -I/<absolute path to ba_graph>/include
+LDFLAGS = -lstdc++fs
+DBGFLAGS = -g -O0 -pedantic
+COMPILE_DBG = $(CXX) $(CFLAGS) $(DBGFLAGS)
+
+
+copy_implementation:
+	cp /<absolute path to ba_graph>/test/implementation_basic.h implementation.h
+all: copy_implementation compile_main
+compile_main:
+	$(COMPILE_DBG) main.cpp -o c_main.out $(LDFLAGS)
+
+clean:
+	rm -rf *.out
+
+.PHONY: clean all compile
+.PHONY: uniquely-main
+.PHONY: compile_uniquely-main
+
