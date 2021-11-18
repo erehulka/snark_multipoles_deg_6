@@ -1,2 +1,4 @@
 Makefile
 implementation.h
+*.out
+*.dSYM
