@@ -1,8 +1,9 @@
-#include "implementation.h"
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include <graphs.hpp>
+#include "implementation.h"
 
 using namespace ba_graph;
 
@@ -11,6 +12,30 @@ struct graph_props_to_delete {
   std::vector<Number> vertices;
 };
 
+void remove_edge(Graph &g, Location &edge) {
+  if (!g.contains( edge )) {
+    throw std::invalid_argument( "Graph does not contain one of provided edges." );
+  }
+  if (g[edge.n1()].degree() == 1 || g[edge.n2()].degree() == 1) {
+    throw std::invalid_argument( "By deleting this edge the graph would break into multiple components." );
+  }
+
+  deleteE(g, edge);
+}
+
+void remove_vertex(Graph &g, Number &vertex) {
+  if (!g.contains(vertex)) {
+    throw std::invalid_argument("Graph does not contain one of provided vertices.");
+  }
+  for (auto n : g[vertex].neighbours()) {
+		if (g[n].degree() == 1) {
+      throw std::invalid_argument("By deleting this vertex the graph would break into multiple components.");
+    }
+	}
+
+  deleteV(g, vertex);
+}
+
 void create_by_removing_three_e(Graph &g, struct graph_props_to_delete &props) {
   if (props.locs.size() != 3) {
     char result_error[100];
@@ -18,13 +43,8 @@ void create_by_removing_three_e(Graph &g, struct graph_props_to_delete &props) {
     std::string error_msg = result_error;
     throw std::range_error(error_msg);
   }
-  // TODO Overit ci nahodou neodstranujeme 3 hrany incidentne s jednym vrcholom.
   for (int i = 0; i < (int) props.locs.size(); i++) {
-    if (!g.contains( props.locs[i] )) {
-      throw std::invalid_argument( "Graph does not contain one of provided edges." );
-    } else {
-      deleteE(g, props.locs[i]);
-    }
+    remove_edge(g, props.locs[i]);
   }
 }
 
@@ -46,11 +66,7 @@ void create_by_removing_2_vertices(Graph &g, struct graph_props_to_delete &props
   }
 
   for (int i = 0; i < (int) props.vertices.size(); i++) {
-    if (!g.contains(props.vertices[i])) {
-      throw std::invalid_argument("Graph does not contain one of provided vertices.");
-    } else {
-      deleteV(g, props.vertices[i]);
-    }
+    remove_vertex(g, props.vertices[i]);
   }
 }
 
@@ -58,6 +74,14 @@ void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
   props.locs.push_back( Location(from, to) );
 }
 
+void add_edge_to_gprops(struct graph_props_to_delete &props, Location edge) {
+  props.locs.push_back(edge);
+}
+
 void add_vertex_to_props(struct graph_props_to_delete &props, int v_index) {
   props.vertices.push_back( Number(v_index) );
+}
+
+void add_vertex_to_props(struct graph_props_to_delete &props, Number vertex) {
+  props.vertices.push_back(vertex);
 }
