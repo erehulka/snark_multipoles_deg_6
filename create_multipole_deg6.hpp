@@ -113,6 +113,12 @@ void create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_props_to_
   remove_edge(g, props.locs[0]);
 }
 
+void create_by_removing_path_length_4(Graph &g, struct graph_props_to_delete &props) {
+  // TODO Assert že dané vrcholy naozaj tvoria cestu dĺžky 4 v grafe g
+  for (auto vertex : props.vertices)
+    remove_vertex(g, vertex);
+}
+
 void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
   props.locs.push_back( Location(from, to) );
 }
