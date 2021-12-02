@@ -12,11 +12,15 @@ struct graph_props_to_delete {
   std::vector<Number> vertices;
 };
 
+// TODO: Vracat default multipol s connectormi ako rozumne rozdelenie visiacich hran
+// TODO Odstranenie hrany/vrchola spravi hranu s vrcholom st. 1 (visiaca)
+
 void remove_edge(Graph &g, Location &edge) {
   if (!g.contains( edge )) {
     throw std::invalid_argument( "Graph does not contain one of provided edges." );
   }
   if (g[edge.n1()].degree() == 1 || g[edge.n2()].degree() == 1) {
+    // TODO odstranit moze byt aj nesuvisly
     throw std::invalid_argument( "By deleting this edge the graph would break into multiple components." );
   }
 
@@ -115,9 +119,12 @@ void create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_props_to_
 
 void create_by_removing_path_length_4(Graph &g, struct graph_props_to_delete &props) {
   // TODO Assert že dané vrcholy naozaj tvoria cestu dĺžky 4 v grafe g
+  // Donutit usera zadat v poradi a overit ci existuju vsetky 3 hrany
   for (auto vertex : props.vertices)
     remove_vertex(g, vertex);
 }
+
+// TODO metoda na odstranenie vrcholu a jeho 3 susedov
 
 void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
   props.locs.push_back( Location(from, to) );
