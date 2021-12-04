@@ -9,6 +9,7 @@
 #include <multipoles.hpp>
 
 #include "implementation.h"
+#include "utils/connector_validator.hpp"
 
 using namespace ba_graph;
 
@@ -23,8 +24,6 @@ Connector remove_edge(Graph &g, Location &edge) {
     } else if (g[edge.n1()].degree() != 3 || g[edge.n2()].degree() != 3) {
         throw std::invalid_argument("You can't remove connector vertex.");
     }
-
-    // TODO Ak uz ma nejaku visiacu hranu tak odstranit ten connector vrchol
 
     Number first = addMultipleV(g,1);
     Number second = addMultipleV(g,1);
@@ -42,14 +41,15 @@ Connector remove_vertex(Graph &g, Number &vertex) {
         throw std::invalid_argument("You can't remove connector vertex.");
     }
 
-    // TODO Ak uz ma nejaku visiacu hranu tak odstranit ten connector vrchol
-
-    Number id_added = addMultipleV(g,3);
     std::vector<Number> connecting_vertices;
     for (auto neighbor : g[vertex].neighbours()) {
-        addE(g, Location(neighbor, id_added));
-        connecting_vertices.push_back(id_added);
-        id_added = id_added + 1;
+        if (g[neighbor].degree() == 1) {
+            deleteV(g, neighbor);
+        } else {
+            Number added = addMultipleV(g,1);
+            addE(g, Location(neighbor, added));
+            connecting_vertices.push_back(added);
+        }
     }
 
     deleteV(g, vertex);
@@ -77,7 +77,7 @@ Multipole create_by_removing_three_e(Graph &g, struct graph_props_to_delete &pro
         connectors.push_back(remove_edge(g, props.locs[i]));
     }
 
-    return Multipole(connectors);
+    return Multipole(get_correct_connectors(g, connectors));
 }
 
 Multipole create_by_removing_2_vertices(Graph &g, struct graph_props_to_delete &props) {
@@ -102,7 +102,7 @@ Multipole create_by_removing_2_vertices(Graph &g, struct graph_props_to_delete &
         connectors.push_back(remove_vertex(g, props.vertices[i]));
     }
 
-    return Multipole(connectors);
+    return Multipole(get_correct_connectors(g, connectors));
 }
 
 Multipole create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_props_to_delete &props) {
@@ -147,7 +147,7 @@ Multipole create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_prop
     }
 
     connectors.push_back(remove_edge(g, props.locs[0]));
-    return Multipole(connectors);
+    return Multipole(get_correct_connectors(g, connectors));
 }
 
 Multipole create_by_removing_path_length_4(Graph &g, struct graph_props_to_delete &props) {
@@ -165,7 +165,7 @@ Multipole create_by_removing_path_length_4(Graph &g, struct graph_props_to_delet
     for (auto vertex : props.vertices)
         connectors.push_back(remove_vertex(g, vertex));
 
-    return Multipole(connectors);
+    return Multipole(get_correct_connectors(g, connectors));
 }
 
 Multipole create_by_removing_vertex_and_3_neighbours(Graph &g, const struct graph_props_to_delete &props) {
@@ -194,7 +194,7 @@ Multipole create_by_removing_vertex_and_3_neighbours(Graph &g, const struct grap
     for (auto vertex : props.vertices)
         connectors.push_back(remove_vertex(g, vertex));
 
-    return Multipole(connectors);
+    return Multipole(get_correct_connectors(g, connectors));
 }
 
 void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
@@ -205,11 +205,11 @@ void add_edge_to_gprops(struct graph_props_to_delete &props, Location edge) {
   props.locs.push_back(edge);
 }
 
-void add_vertex_to_props(struct graph_props_to_delete &props, const int v_index) {
+void add_vertex_to_gprops(struct graph_props_to_delete &props, const int v_index) {
   props.vertices.emplace_back(v_index);
 }
 
-void add_vertex_to_props(struct graph_props_to_delete &props, const Number vertex) {
+void add_vertex_to_gprops(struct graph_props_to_delete &props, const Number vertex) {
   props.vertices.push_back(vertex);
 }
 
