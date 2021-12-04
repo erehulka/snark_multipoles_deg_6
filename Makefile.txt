@@ -1,11 +1,12 @@
-CFLAGS = -std=c++17 -fconcepts -I/<absolute path to ba_graph>/include
+BA_GRAPH_PATH = ...
+CFLAGS = -std=c++17 -fconcepts -I$(BA_GRAPH_PATH)/include
 LDFLAGS = -lstdc++fs
 DBGFLAGS = -g -O0 -pedantic
 COMPILE_DBG = $(CXX) $(CFLAGS) $(DBGFLAGS)
 
 
 copy_implementation:
-	cp /<absolute path to ba_graph>/test/implementation_basic.h implementation.h
+	cp $(BA_GRAPH_PATH)/test/implementation_basic.h implementation.h
 all: copy_implementation compile_main
 compile_main:
 	$(COMPILE_DBG) main.cpp -o c_main.out $(LDFLAGS)
