@@ -1,32 +1,121 @@
-#include "implementation.h"
+#include <cassert>
 
+#include "implementation.h"
 #include <graphs.hpp>
 #include <snarks/colouring_cvd.hpp>
 #include "create_multipole_deg6.hpp"
 
 using namespace ba_graph;
 
+template<class T>
+void assert_exception(T func, Graph &g, struct graph_props_to_delete &props) {
+    bool caught = false;
+    try {
+        func(g, props);
+    } catch (const std::exception &e) {
+        caught = true;
+    }
 
-int main() {
+    assert(caught);
+}
+
+void test_create_by_removing_three_edges() {
+    Graph g(create_petersen());
+
     graph_props_to_delete some_edges;
     add_edge_to_gprops(some_edges, 1, 2);
     add_edge_to_gprops(some_edges, Location(Number(8), Number(3)));
     add_edge_to_gprops(some_edges, Location(4, 9));
 
-    Graph g(create_petersen());
-    std::cout << g << std::endl;
-    create_by_removing_three_e(g, some_edges);
-    std::cout << g << std::endl;
+    Multipole result = create_by_removing_three_e(g, some_edges);
+    assert(result.size() == 3);
+    for (const auto& con : result.connectors)
+        assert(con.size() == 2);
+
+    assert(g.contains(Location(1, 10)));
+    assert(!g.contains(Location(1, 2)));
 
     Graph g2(create_petersen());
-    std::cout << g2 << std::endl;
-    graph_props_to_delete some_edges2;
-    add_vertex_to_gprops(some_edges2, 4);
-    add_vertex_to_gprops(some_edges2, 0);
-    add_vertex_to_gprops(some_edges2, Number(3));
-    add_vertex_to_gprops(some_edges2, Number(9));
-    create_by_removing_vertex_and_3_neighbours(g2, some_edges2);
-    std::cout << g2 << std::endl;
+    clear_props(some_edges);
+    add_edge_to_gprops(some_edges, 1, 2);
+    add_edge_to_gprops(some_edges, 3, 2);
+    add_edge_to_gprops(some_edges, 1, 4);
+    add_edge_to_gprops(some_edges, 9, 8);
+    assert_exception(create_by_removing_three_e, g2, some_edges);
+}
+
+void test_create_by_removing_vertex_and_3_neighbours() {
+    Graph g(create_petersen());
+    graph_props_to_delete props;
+    add_vertex_to_gprops(props, 4);
+    add_vertex_to_gprops(props, 0);
+    add_vertex_to_gprops(props, Number(3));
+    add_vertex_to_gprops(props, Number(9));
+    Multipole result = create_by_removing_vertex_and_3_neighbours(g, props);
+
+    assert(result.size() == 3);
+    for (const auto &con : result.connectors)
+        assert(con.size() == 2);
+
+    clear_props(props);
+    add_vertex_to_gprops(props, 0);
+    add_vertex_to_gprops(props, Number(3));
+    add_vertex_to_gprops(props, 4);
+    Graph g2(create_petersen());
+
+    assert_exception(create_by_removing_vertex_and_3_neighbours, g2, props);
+    add_vertex_to_gprops(props, 4);
+    assert_exception(create_by_removing_vertex_and_3_neighbours, g2, props);
+    props.vertices[3] = Number(9);
+    assert_exception(create_by_removing_vertex_and_3_neighbours, g2, props);
+
+    clear_props(props);
+    add_vertex_to_gprops(props, 7);
+    add_vertex_to_gprops(props, 2);
+    add_vertex_to_gprops(props, 5);
+    add_vertex_to_gprops(props, 9);
+    Graph g3(create_petersen());
+    result = create_by_removing_vertex_and_3_neighbours(g3, props);
+
+    assert(result.size() == 3);
+    for (const auto &con : result.connectors)
+        assert(con.size() == 2);
+}
+
+void test_create_by_removing_2_vertices() {
+    Graph g(create_petersen());
+    graph_props_to_delete props;
+    std::cout << g << std::endl;
+    add_vertex_to_gprops(props, 4);
+    add_vertex_to_gprops(props, 8);
+
+    Multipole result = create_by_removing_2_vertices(g, props);
+
+    assert(result.size() == 2);
+    for (const auto &con : result.connectors)
+        assert(con.size() == 3);
+    assert(result.connectors[0].numbers[0] == 10);
+    assert(result.connectors[1].numbers[0] == 13);
+
+    clear_props(props);
+    Graph g2(create_petersen());
+    add_vertex_to_gprops(props, 4);
+    assert_exception(create_by_removing_2_vertices, g2, props);
+    add_vertex_to_gprops(props, 0);
+    assert_exception(create_by_removing_2_vertices, g2, props);
+}
+
+void test_create_by_removing_2_inc_vertices_and_edge() {
+    Graph g(create_petersen());
+    graph_props_to_delete props;
+}
+
+
+int main() {
+    test_create_by_removing_three_edges();
+    test_create_by_removing_vertex_and_3_neighbours();
+    test_create_by_removing_2_vertices();
+    test_create_by_removing_2_inc_vertices_and_edge();
 
     return 0;
 }

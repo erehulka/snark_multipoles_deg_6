@@ -213,4 +213,9 @@ void add_vertex_to_gprops(struct graph_props_to_delete &props, const Number vert
   props.vertices.push_back(vertex);
 }
 
+void clear_props(struct graph_props_to_delete &props) {
+    props.vertices = std::vector<Number>();
+    props.locs = std::vector<Location>();
+}
+
 #pragma clang diagnostic pop
