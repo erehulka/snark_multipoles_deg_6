@@ -14,7 +14,4 @@ compile_main:
 clean:
 	rm -rf *.out
 
-.PHONY: clean all compile
-.PHONY: uniquely-main
-.PHONY: compile_uniquely-main
-
+.PHONY: clean all compile_main copy_implementation
