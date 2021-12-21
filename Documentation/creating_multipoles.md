@@ -19,6 +19,7 @@ vypočítať šírku výsledného multipólu, ktorý platí pre každý graf, ni
 - **Odstránením 2 incidentných bodov a ľubovoľnej hrany, ktorá nie je incidentná s ani jedným z týchto bodov**
     - Toto sa dá ľahko ošetriť tým, že hranu odstránime až po odstránení bodov.
 - **Odstránením bodov cesty dĺžky 4**
+- **Odstránením bodu a jeho 3 susedov**
 
 ---
 
@@ -43,3 +44,4 @@ will show a solution on how to compute degree of resulting multipole, which appl
 - **Removing 2 incidental vertices and one edge non-incidental with any of those two vertices**
 - We can fulfill this by removing the edge after removing the vertices.
 - **Removing vertices on path with length 4**
+- **Removing a vertex and its 3 neighbours**

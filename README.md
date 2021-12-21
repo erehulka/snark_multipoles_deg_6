@@ -7,4 +7,4 @@ first row will look like this:
 
     BA_GRAPH_PATH = /Users/erehulka/Documents/Informatika/ZIMA2/RP/ba-graph
 
-Then TODO
+Then, to compile, run `make all`. New runnable *c_main.out* will be created. Run it to run all of the tests.
