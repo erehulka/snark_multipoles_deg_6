@@ -78,6 +78,8 @@ void test_create_by_removing_vertex_and_3_neighbours() {
     result = create_by_removing_vertex_and_3_neighbours(g3, props);
 
     assert(result.size() == 3);
+    assert(result.check_in(g3));
+    assert(!result.check_in(g2));
     for (const auto &con : result.connectors)
         assert(con.size() == 2);
 }
@@ -85,7 +87,6 @@ void test_create_by_removing_vertex_and_3_neighbours() {
 void test_create_by_removing_2_vertices() {
     Graph g(create_petersen());
     graph_props_to_delete props;
-    std::cout << g << std::endl;
     add_vertex_to_gprops(props, 4);
     add_vertex_to_gprops(props, 8);
 
@@ -108,6 +109,71 @@ void test_create_by_removing_2_vertices() {
 void test_create_by_removing_2_inc_vertices_and_edge() {
     Graph g(create_petersen());
     graph_props_to_delete props;
+    add_vertex_to_gprops(props, 2);
+    add_vertex_to_gprops(props, 3);
+    add_edge_to_gprops(props, 9, 6);
+
+    assert(!g.contains(10));
+    assert(g.size() == 15);
+    Multipole result = create_by_removing_2_inc_vertices_and_edge(g, props);
+
+    assert(result.size() == 3);
+    assert(g.contains(10));
+    for (const auto &con : result.connectors)
+        assert(con.size() == 2);
+
+    clear_props(props);
+    Graph g2(create_petersen());
+    add_vertex_to_gprops(props, 2);
+    assert_exception(create_by_removing_2_inc_vertices_and_edge, g, props);
+    add_vertex_to_gprops(props, 2);
+    assert_exception(create_by_removing_2_inc_vertices_and_edge, g, props);
+    add_edge_to_gprops(props, 9, 6);
+    assert_exception(create_by_removing_2_inc_vertices_and_edge, g, props);
+    props.vertices[1] = Number(9);
+    assert_exception(create_by_removing_2_inc_vertices_and_edge, g, props);
+
+    clear_props(props);
+    add_vertex_to_gprops(props, 3);
+    add_vertex_to_gprops(props, 2);
+    add_edge_to_gprops(props, 2, 1);
+    assert_exception(create_by_removing_2_inc_vertices_and_edge, g, props);
+
+    clear_props(props);
+    add_vertex_to_gprops(props, 1);
+    add_edge_to_gprops(props, 5, 7);
+    add_vertex_to_gprops(props, 0);
+    result = create_by_removing_2_inc_vertices_and_edge(g2, props);
+    assert(result.size() == 3);
+}
+
+void test_create_by_removing_path_length_4() {
+    Graph g(create_petersen());
+    graph_props_to_delete props;
+    add_vertex_to_gprops(props, 2);
+    add_vertex_to_gprops(props, 3);
+    add_vertex_to_gprops(props, 8);
+    add_vertex_to_gprops(props, 6);
+
+    Multipole result = create_by_removing_path_length_4(g, props);
+
+    assert(result.size() == 4);
+    assert(result.check_in(g));
+    for (const auto &con : result.connectors)
+        assert(con.size() == 2 || con.size() == 1);
+
+    Graph g2(create_petersen());
+    clear_props(props);
+    add_vertex_to_gprops(props, 2);
+    add_vertex_to_gprops(props, 3);
+    add_vertex_to_gprops(props, 8);
+    assert_exception(create_by_removing_path_length_4, g2, props);
+    add_vertex_to_gprops(props, 0);
+    assert_exception(create_by_removing_path_length_4, g2, props);
+    props.vertices[3] = Number(5);
+
+    result = create_by_removing_path_length_4(g2, props);
+    assert(result.size() == 4);
 }
 
 
@@ -116,6 +182,8 @@ int main() {
     test_create_by_removing_vertex_and_3_neighbours();
     test_create_by_removing_2_vertices();
     test_create_by_removing_2_inc_vertices_and_edge();
+    test_create_by_removing_path_length_4();
 
+    std::cout << "All tests ran - asserts true." << std::endl;
     return 0;
 }

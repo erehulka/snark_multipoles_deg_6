@@ -116,7 +116,7 @@ Multipole create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_prop
     throw std::range_error(error_msg);
   }
   
-  if (props.locs.size() != 3) {
+  if (props.locs.size() != 1) {
     char result_error[100];
     sprintf(result_error, "Number of edges must be 1, %lu provided.", props.locs.size());
     std::string error_msg = result_error;
