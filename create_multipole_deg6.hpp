@@ -1,5 +1,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-return-braced-init-list"
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -84,7 +85,7 @@ Multipole create_by_removing_2_vertices(Graph &g, struct graph_props_to_delete &
   if (props.vertices.size() != 2) {
     char result_error[100];
     sprintf(result_error, "Number of vertices must be 2, provided: %lu.", props.vertices.size());
-    std::string error_msg = result_error; 
+    std::string error_msg = result_error;
     throw std::range_error(error_msg);
   }
 
@@ -112,10 +113,10 @@ Multipole create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_prop
   if (props.vertices.size() != 2) {
     char result_error[100];
     sprintf(result_error, "Number of vertices must be 2, provided: %lu.", props.vertices.size());
-    std::string error_msg = result_error; 
+    std::string error_msg = result_error;
     throw std::range_error(error_msg);
   }
-  
+
   if (props.locs.size() != 1) {
     char result_error[100];
     sprintf(result_error, "Number of edges must be 1, %lu provided.", props.locs.size());
@@ -139,7 +140,7 @@ Multipole create_by_removing_2_inc_vertices_and_edge(Graph &g, struct graph_prop
     throw std::invalid_argument("The edge can\'t be incidental with any of the 2 vertices.");
   }
 
-  // ----------- END corectness check -----------
+  // ----------- END correctness check -----------
 
     std::vector<Connector> connectors;
     for (int i = 0; i < 2; i++) {
