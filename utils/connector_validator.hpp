@@ -10,6 +10,11 @@
 
 using namespace ba_graph;
 
+/**
+ * Functions that validates and fixes vector of connectors,
+ * that will be passed as a parameter to Multipole constructor.
+ */
+
 void process_connector(const Graph &g, Connector &connector) {
     std::vector<Number> existing;
     for (auto vertex : connector.numbers) {

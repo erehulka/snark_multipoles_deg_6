@@ -19,6 +19,38 @@ struct graph_props_to_delete {
   std::vector<Number> vertices;
 };
 
+/**
+ * Functions to modify struct graph_props_to_delete
+ * Add edge, vertex, or clear all data from it.
+ * TODO add these modifiers to different file, folder utils
+ */
+
+void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
+    props.locs.emplace_back(from, to);
+}
+
+void add_edge_to_gprops(struct graph_props_to_delete &props, Location edge) {
+    props.locs.push_back(edge);
+}
+
+void add_vertex_to_gprops(struct graph_props_to_delete &props, const int v_index) {
+    props.vertices.emplace_back(v_index);
+}
+
+void add_vertex_to_gprops(struct graph_props_to_delete &props, const Number vertex) {
+    props.vertices.push_back(vertex);
+}
+
+void clear_props(struct graph_props_to_delete &props) {
+    props.vertices = std::vector<Number>();
+    props.locs = std::vector<Location>();
+}
+
+/**
+ * Functions to remove vertex or edge from graph.
+ * Returned values are connectors, with newly created vertices.
+ */
+
 Connector remove_edge(Graph &g, Location &edge) {
     if (!g.contains( edge )) {
         throw std::invalid_argument( "Graph does not contain one of provided edges." );
@@ -57,6 +89,9 @@ Connector remove_vertex(Graph &g, Number &vertex) {
     return Connector(connecting_vertices);
 }
 
+/**
+ * Simple function to check if vertices in graph props form a path in given graph.
+ */
 bool is_path(const Graph &g, const struct graph_props_to_delete &props) {
     for (int i = 0; i < (props.vertices.size() - 1); i++) {
         if (!g.contains( Location(props.vertices[i], props.vertices[i+1]) ))
@@ -64,6 +99,10 @@ bool is_path(const Graph &g, const struct graph_props_to_delete &props) {
     }
     return true;
 }
+
+/**
+ * Functions to modify graphs, to return multipoles with width 6.
+ */
 
 Multipole create_by_removing_three_e(Graph &g, struct graph_props_to_delete &props) {
     if (props.locs.size() != 3) {
@@ -196,27 +235,6 @@ Multipole create_by_removing_vertex_and_3_neighbours(Graph &g, const struct grap
         connectors.push_back(remove_vertex(g, vertex));
 
     return Multipole(get_correct_connectors(g, connectors));
-}
-
-void add_edge_to_gprops(struct graph_props_to_delete &props, int from, int to) {
-  props.locs.emplace_back(from, to);
-}
-
-void add_edge_to_gprops(struct graph_props_to_delete &props, Location edge) {
-  props.locs.push_back(edge);
-}
-
-void add_vertex_to_gprops(struct graph_props_to_delete &props, const int v_index) {
-  props.vertices.emplace_back(v_index);
-}
-
-void add_vertex_to_gprops(struct graph_props_to_delete &props, const Number vertex) {
-  props.vertices.push_back(vertex);
-}
-
-void clear_props(struct graph_props_to_delete &props) {
-    props.vertices = std::vector<Number>();
-    props.locs = std::vector<Location>();
 }
 
 #pragma clang diagnostic pop
