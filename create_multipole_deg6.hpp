@@ -1,6 +1,9 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-return-braced-init-list"
 
+#ifndef CREATE_MULTIPOLE_DEG_6
+#define CREATE_MULTIPOLE_DEG_6
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -39,6 +42,10 @@ void add_vertex_to_gprops(struct graph_props_to_delete &props, const int v_index
 
 void add_vertex_to_gprops(struct graph_props_to_delete &props, const Number vertex) {
     props.vertices.push_back(vertex);
+}
+
+void remove_last_vertex_from_gprops(struct graph_props_to_delete &props) {
+    props.vertices.pop_back();
 }
 
 void clear_props(struct graph_props_to_delete &props) {
@@ -236,5 +243,7 @@ Multipole create_by_removing_vertex_and_3_neighbours(Graph &g, const struct grap
 
     return Multipole(get_correct_connectors(g, connectors));
 }
+
+#endif
 
 #pragma clang diagnostic pop

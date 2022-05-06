@@ -1,3 +1,6 @@
+#ifndef CONNECTOR_VALIDATOR
+#define CONNECTOR_VALIDATOR
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -39,3 +42,5 @@ std::vector<Connector> get_correct_connectors(const Graph &g, std::vector<Connec
 
     return to_return;
 }
+
+#endif

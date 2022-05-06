@@ -11,7 +11,7 @@ using namespace ba_graph;
  * Function copied from stackoverflow
  * https://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
  */
-static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp)
+size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
@@ -57,9 +57,12 @@ std::vector<Graph> generate_graphs_from_webpage(const std::string& input_url) {
     std::string content = request_html_page(input_url);
     std::vector<std::string> graph_codes = split_string(content);
 
-    // TODO: Paralelne
     for (const std::string& graph_repr : graph_codes) {
-        result.emplace_back(read_graph6_line(graph_repr));
+        try {
+            result.emplace_back(read_graph6_line(graph_repr));
+        } catch (const std::invalid_argument& e) {
+            // pass: invalid graph argument
+        }
     }
 
     return result;
