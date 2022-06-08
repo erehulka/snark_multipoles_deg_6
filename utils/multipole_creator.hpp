@@ -5,20 +5,81 @@
 #include <vector>
 #include <utility>
 
+#include "../implementation.h"
+#include <algorithms/cyclic_connectivity.hpp>
 #include <graphs.hpp>
 #include <multipoles.hpp>
 #include <invariants.hpp>
-#include "../implementation.h"
+
 #include "../create_multipole_deg6.hpp"
 
 using namespace ba_graph;
+
+void renumber_g_by_isaacs(Graph &g, Graph &isaacs) {
+    std::vector<Number> v;
+    for(const auto &rot : g) v.push_back(rot.n());
+    std::sort(v.begin(),v.end());
+    Mapping<Number> map;
+    int i_size = max_number(isaacs).to_int() + 1;
+    for(const auto &e : v) map.set(e.to_int(),e.to_int() + i_size);
+    renumber_vertices(g,map);
+}
+
+void connect_g_to_isaacs(Graph &g, std::pair<Graph*, Multipole*> isaacs_multipole) {
+    renumber_g_by_isaacs(g, *(isaacs_multipole.first));
+    Graph* isaacs = isaacs_multipole.first;
+
+    std::vector<Number> connectors_from_g;
+    std::vector<Number> to_delete_g;
+    for(const auto &rot : g){
+        if (rot.neighbours().size() == 1) {
+            connectors_from_g.push_back(*(rot.neighbours().begin()));
+            to_delete_g.push_back(rot.n());
+        }
+    }
+    for (const auto &num_d : to_delete_g) {
+        deleteV(g, num_d);
+    }
+
+    std::vector<Number> r;
+    for(const auto &rot : *isaacs){
+        if (rot.neighbours().size() == 3) {
+            addV(g,rot.n());
+            r.push_back(rot.n());
+        }
+    }
+
+    for (const auto &num : r) {
+        for (const Number n : (*isaacs)[num].neighbours()) {
+            if (n > num && (*isaacs)[n].degree() == 3) addE(g, Location(num, n));
+        }
+    }
+
+    std::vector<Number> isaacs_connectors = (isaacs_multipole.second)->connectors[0].numbers;
+    for (int i = 0; i < 6; i++) {
+        addE(g, Location(connectors_from_g[i], *((*isaacs)[isaacs_connectors[i]].neighbours().begin())));
+    }
+}
 
 bool is_good_multipole(Graph &g, Multipole &m) {
     int girth_m = girth(g);
     if (girth_m < 6) return false;
 
     Graph isaacs = create_isaacs(6);
-    // TODO - connect isaacs graph with deleted inner cycle to given graph as parameter with multipole info
+    graph_props_to_delete props;
+    props.vertices = {0, 1, 2, 3, 4, 5};
+    std::vector<Connector> connectors;
+    for (Number i : props.vertices) {
+        connectors.push_back(remove_vertex(isaacs, i));
+    }
+    Multipole m_isaacs = Multipole(get_correct_connectors(isaacs, connectors));
+    m_isaacs.flatten();
+
+    std::pair<Graph*, Multipole*> isaacs_multipole = {&isaacs, &m_isaacs};
+    Graph gCopy = copy_identical(g);
+    connect_g_to_isaacs(gCopy, isaacs_multipole);
+
+    if (cyclic_connectivity(gCopy) < 6) return false;
 
     return true;
 }
