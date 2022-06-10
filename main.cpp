@@ -7,6 +7,7 @@
 #include "./utils/file_parser.hpp"
 #include "./utils/multipole_creator.hpp"
 #include "create_multipole_deg6.hpp"
+#include "generate_all_correct_multipoles.hpp"
 
 using namespace ba_graph;
 
@@ -181,11 +182,8 @@ void test_create_by_removing_path_length_4() {
 
 
 int main() {
-    //std::vector<Graph> result = generate_graphs_from_webpage("https://hog.grinvin.org/data/snarks/Generated_graphs.22.05.sn.cyc4.g6");
-    std::vector<Graph> result = generate_graphs_from_file("/Users/erehulka/Downloads/Generated_graphs.22.04.sn.cyc4.g6.txt");
-    std::cout << result.size() << std::endl;
-    std::vector<std::pair<Graph*, Multipole*> > allMulti = create_all_multipoles_from_graph(result[0]);
-    std::cout << allMulti.size() << std::endl;
+    generate_all_and_write_to_file("https://hog.grinvin.org/data/snarks/Generated_graphs.24.04.sn.cyc4.g6", "out24.txt",
+                                   false);
 
     test_create_by_removing_three_edges();
     test_create_by_removing_vertex_and_3_neighbours();

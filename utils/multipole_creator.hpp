@@ -15,6 +15,28 @@
 
 using namespace ba_graph;
 
+struct multipole_creation {
+    std::string g;
+    Multipole *m;
+    std::string g_original;
+    graph_props_to_delete props;
+    std::string deletion_method;
+
+    multipole_creation() = delete;
+    multipole_creation(Graph &g, Multipole &m, Graph &g_original, graph_props_to_delete &props, std::string deletion_m) {
+        this->g = write_graph6(g, false);
+        this->m = &m;
+        this->deletion_method = deletion_m;
+
+        this->g_original = write_graph6(g_original, false);
+
+        graph_props_to_delete props_t;
+        props_t.vertices = std::vector<Number>(props.vertices);
+        props_t.locs = std::vector<Location>(props.locs);
+        this->props = props_t;
+    }
+};
+
 void renumber_g_by_isaacs(Graph &g, Graph &isaacs) {
     std::vector<Number> v;
     for(const auto &rot : g) v.push_back(rot.n());
@@ -84,8 +106,8 @@ bool is_good_multipole(Graph &g, Multipole &m) {
     return true;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_3_edges(Graph &g, graph_props_to_delete &props) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_removing_3_edges(Graph &g, graph_props_to_delete &props) {
+    std::vector<multipole_creation> result;
     if (props.locs.size() == 3) {
         try {
             Graph gCopy = copy_identical(g);
@@ -93,7 +115,7 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_3_
 
             if (!is_good_multipole(gCopy, m)) return result;
 
-            result.push_back(std::make_pair(&gCopy, &m));
+            result.push_back(multipole_creation(gCopy, m, g, props, "by_3_edges"));
         } catch (const std::exception &e) {
             // no action
         }
@@ -102,7 +124,7 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_3_
             for (int j = i+1; j < max_number(g); j++) {
                 if (!g.contains(Location(i, j))) continue;
                 add_edge_to_gprops(props, i, j);
-                std::vector<std::pair<Graph*, Multipole*> > recursiveResult = create_all_multipoles_by_removing_3_edges(g, props);
+                std::vector<multipole_creation> recursiveResult = create_all_multipoles_by_removing_3_edges(g, props);
                 result.insert(result.end(), recursiveResult.begin(), recursiveResult.end());
                 props.locs.pop_back();
             }
@@ -112,8 +134,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_3_
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_vertices(Graph &g, graph_props_to_delete &props) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_removing_2_vertices(Graph &g, graph_props_to_delete &props) {
+    std::vector<multipole_creation> result;
 
     for (int i = 0; i < max_number(g); i++) {
         add_vertex_to_gprops(props, i);
@@ -126,7 +148,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_
 
                 if (!is_good_multipole(gCopy, m)) continue;
 
-                result.push_back({&g, &m});
+                Graph g_original = copy_identical(g);
+                result.push_back(multipole_creation(gCopy, m, g_original, props, "by_2_vertices"));
             } catch (const std::exception &e) {
                 // no action
             }
@@ -139,8 +162,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_inc_vertices_and_edge(Graph &g, graph_props_to_delete &props) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_removing_2_inc_vertices_and_edge(Graph &g, graph_props_to_delete &props) {
+    std::vector<multipole_creation> result;
 
     if (props.vertices.size() == 2) {
         for (int i = 0; i < max_number(g); i++) {
@@ -154,7 +177,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_
 
                     if (!is_good_multipole(gCopy, m)) continue;
 
-                    result.push_back({&g, &m});
+                    Graph g_original = copy_identical(g);
+                    result.push_back(multipole_creation(gCopy, m, g_original, props, "2_inc_vertices_and_edge"));
                 } catch (const std::exception &e) {
                     // no action
                 }
@@ -168,7 +192,7 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_
             for (int j = i+1; j < max_number(g); j++) {
                 add_vertex_to_gprops(props, j);
 
-                std::vector<std::pair<Graph*, Multipole*> > recursiveResult = create_all_multipoles_by_removing_2_inc_vertices_and_edge(g, props);
+                std::vector<multipole_creation> recursiveResult = create_all_multipoles_by_removing_2_inc_vertices_and_edge(g, props);
                 result.insert(result.end(), recursiveResult.begin(), recursiveResult.end());
 
                 props.vertices.pop_back();
@@ -180,8 +204,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_2_
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_path_length_4(Graph &g, graph_props_to_delete &props) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_removing_path_length_4(Graph &g, graph_props_to_delete &props) {
+    std::vector<multipole_creation> result;
 
     if (props.vertices.size() == 4) {
         try {
@@ -190,7 +214,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_pa
 
             if (!is_good_multipole(gCopy, m)) return result;
 
-            result.push_back({&g, &m});
+            Graph g_original = copy_identical(g);
+            result.push_back(multipole_creation(gCopy, m, g_original, props, "path_len_4"));
         } catch (const std::exception &e) {
             // no action
         }
@@ -198,7 +223,7 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_pa
         for (int i = 0; i < max_number(g); i++) {
             add_vertex_to_gprops(props, i);
 
-            std::vector<std::pair<Graph*, Multipole*> > recursiveResult = create_all_multipoles_by_removing_path_length_4(g, props);
+            std::vector<multipole_creation> recursiveResult = create_all_multipoles_by_removing_path_length_4(g, props);
             result.insert(result.end(), recursiveResult.begin(), recursiveResult.end());
 
             remove_last_vertex_from_gprops(props);
@@ -209,7 +234,7 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_pa
             if (!std::count(props.vertices.begin(), props.vertices.end(), neighbor)) {
                 add_vertex_to_gprops(props, neighbor);
 
-                std::vector<std::pair<Graph*, Multipole*> > recursiveResult = create_all_multipoles_by_removing_path_length_4(g, props);
+                std::vector<multipole_creation> recursiveResult = create_all_multipoles_by_removing_path_length_4(g, props);
                 result.insert(result.end(), recursiveResult.begin(), recursiveResult.end());
 
                 remove_last_vertex_from_gprops(props);
@@ -220,8 +245,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_pa
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_vertex_and_3_neighbours(Graph &g, graph_props_to_delete &props) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_removing_vertex_and_3_neighbours(Graph &g, graph_props_to_delete &props) {
+    std::vector<multipole_creation> result;
 
     for (int vertex = 0; vertex <= max_number(g); vertex++) {
         add_vertex_to_gprops(props, vertex);
@@ -236,7 +261,8 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_ve
 
             if (!is_good_multipole(gCopy, m)) continue;
 
-            result.push_back({&g, &m});
+            Graph g_original = copy_identical(g);
+            result.push_back(multipole_creation(gCopy, m, g_original, props, "vertex_and_3_neighbors"));
         } catch (const std::exception &e) {
             // no action
         }
@@ -247,37 +273,37 @@ std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_removing_ve
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_by_functions(Graph &g) {
-    std::vector<std::pair<Graph*, Multipole*> > result;
+std::vector<multipole_creation> create_all_multipoles_by_functions(Graph &g) {
+    std::vector<multipole_creation> result;
 
     graph_props_to_delete props;
     clear_props(props);
 
-    std::vector<std::pair<Graph*, Multipole*> > by_removing_3_edges = create_all_multipoles_by_removing_3_edges(g, props);
+    std::vector<multipole_creation> by_removing_3_edges = create_all_multipoles_by_removing_3_edges(g, props);
     result.insert(result.end(), by_removing_3_edges.begin(), by_removing_3_edges.end());
     clear_props(props);
 
-    std::vector<std::pair<Graph*, Multipole*> > by_removing_2_vertices = create_all_multipoles_by_removing_2_vertices(g, props);
+    std::vector<multipole_creation> by_removing_2_vertices = create_all_multipoles_by_removing_2_vertices(g, props);
     result.insert(result.end(), by_removing_2_vertices.begin(), by_removing_2_vertices.end());
     clear_props(props);
 
-    std::vector<std::pair<Graph*, Multipole*> > by_removing_2_in_vertices_and_edge = create_all_multipoles_by_removing_2_inc_vertices_and_edge(g, props);
+    std::vector<multipole_creation> by_removing_2_in_vertices_and_edge = create_all_multipoles_by_removing_2_inc_vertices_and_edge(g, props);
     result.insert(result.end(), by_removing_2_in_vertices_and_edge.begin(), by_removing_2_in_vertices_and_edge.end());
     clear_props(props);
 
-    std::vector<std::pair<Graph*, Multipole*> > by_removing_path_4 = create_all_multipoles_by_removing_path_length_4(g, props);
+    std::vector<multipole_creation> by_removing_path_4 = create_all_multipoles_by_removing_path_length_4(g, props);
     result.insert(result.end(), by_removing_path_4.begin(), by_removing_path_4.end());
     clear_props(props);
 
-    std::vector<std::pair<Graph*, Multipole*> > by_removing_vertex_3_neighbors = create_all_multipoles_by_removing_vertex_and_3_neighbours(g, props);
+    std::vector<multipole_creation> by_removing_vertex_3_neighbors = create_all_multipoles_by_removing_vertex_and_3_neighbours(g, props);
     result.insert(result.end(), by_removing_vertex_3_neighbors.begin(), by_removing_vertex_3_neighbors.end());
     clear_props(props);
 
     return result;
 }
 
-std::vector<std::pair<Graph*, Multipole*> > create_all_multipoles_from_graph(Graph &g) {
-    std::vector<std::pair<Graph*, Multipole*> > by_functions = create_all_multipoles_by_functions(g);
+std::vector<multipole_creation> create_all_multipoles_from_graph(Graph &g) {
+    std::vector<multipole_creation> by_functions = create_all_multipoles_by_functions(g);
     return by_functions;
 }
 
